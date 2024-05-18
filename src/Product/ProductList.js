@@ -2,6 +2,7 @@ import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import Product from './Product';
 
+
 const productsArr = [
   {
     title: 'Colors',
