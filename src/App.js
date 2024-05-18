@@ -1,20 +1,24 @@
+// src/App.js
 import React from 'react';
-import { Container } from 'react-bootstrap';
-import ProductList from './Product/ProductList';
-import Cart from './Product/Cart'
+import { CartProvider } from './Product/CartContext';
+import Product from './Product/Product';
+import Cart from './Product/Cart';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 
-
-
-function App() {
+const App = () => {
   return (
-    <Container>
-      <Cart/>
-            <h1 className="my-4">E-commerce Website</h1>
-      <ProductList />
-    </Container>
+    <CartProvider>
+      <div className="container">
+        <h1>Products</h1>
+        <div className="row">
+          <Product title="Colors" price={100} imageUrl="https://prasadyash2411.github.io/ecom-website/img/Album%201.png" />
+          <Product title="Black and white Colors" price={50} imageUrl="https://prasadyash2411.github.io/ecom-website/img/Album%202.png" />
+          <Product title="Yellow and Black Colors" price={70} imageUrl="https://prasadyash2411.github.io/ecom-website/img/Album%203.png" />
+        </div>
+        <Cart />
+      </div>
+    </CartProvider>
   );
-}
+};
 
 export default App;
