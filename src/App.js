@@ -144,9 +144,8 @@
 //   </Router>
 // );
 
-// export default App;
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch, NavLink } from 'react-router-dom';
+// export default App;import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Redirect, Switch, NavLink } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from './Home';
 import Store from './Store';
@@ -154,8 +153,9 @@ import About from './About';
 import ContactUs from './ContactUs';
 import ProductReviews from './Product/ProductReviews'
 import ProductPage from './Product/ProductPage';
+import {useState,useEffect} from 'react';
+import Login from './Login';  // Assuming you have a Login component
 
-// Define a new component for the Flipkart-like product page
 const FlipkartProduct = () => (
   <div>
     <h2>Flipkart-like Product Page</h2>
@@ -165,43 +165,90 @@ const FlipkartProduct = () => (
   </div>
 );
 
-const App = () => (
-  <Router>
-    <div className="container">
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <NavLink className="navbar-brand" to="/">Home</NavLink>
-        <div className="collapse navbar-collapse">
-          <ul className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/store">Store</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/about">About</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/contact">Contact Us</NavLink>
-            </li>
-            {/* Add a link to the Flipkart-like product page */}
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/flipkart-product">Flipkart Product</NavLink>
-            </li>
-          </ul>
-        </div>
-      </nav>
-      <Switch>
-        <Route path="/" exact component={Home} />
-        <Route path="/store" component={Store} />
-        <Route path="/about" component={About} />
-        <Route path="/contact" component={ContactUs} />
-        {/* Route for the Flipkart-like product page */}
-        <Route path="/flipkart-product" component={FlipkartProduct} />
-        {/* Route for the dynamic product page */}
-        <Route path="/product/:productId" component={ProductPage} />
-        {/* Route for the product reviews */}
-        <Route path="/reviews/:productId" component={ProductReviews} />
-      </Switch>
-    </div>
-  </Router>
-);
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    checkToken();
+  }, []);
+
+  const checkToken = () => {
+    const token = localStorage.getItem('userToken');
+    const expirationTime = localStorage.getItem('tokenExpiration');
+    const currentTime = new Date().getTime();
+
+    if (token && expirationTime && currentTime < expirationTime) {
+      setIsAuthenticated(true);
+    } else {
+      logoutUser();
+    }
+  };
+
+  const loginUser = (token) => {
+    const expirationTime = new Date().getTime() + 5 * 60 * 1000; // 5 minutes from now
+    localStorage.setItem('userToken', token);
+    localStorage.setItem('tokenExpiration', expirationTime);
+    setIsAuthenticated(true);
+    setLogoutTimer(5 * 60 * 1000);
+  };
+
+  const logoutUser = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('tokenExpiration');
+    setIsAuthenticated(false);
+    alert('Session has expired. Please log in again.');
+  };
+
+  const setLogoutTimer = (timeout) => {
+    setTimeout(() => {
+      logoutUser();
+    }, timeout);
+  };
+
+  return (
+    <Router>
+      <div className="container">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+          <NavLink className="navbar-brand" to="/">Home</NavLink>
+          <div className="collapse navbar-collapse">
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/store">Store</NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/about">About</NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/contact">Contact Us</NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/flipkart-product">Flipkart Product</NavLink>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <Switch>
+          <Route path="/login">
+            <Login onLogin={loginUser} />
+          </Route>
+          <Route path="/store">
+            {isAuthenticated ? <Store /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/about" component={About} />
+          <Route path="/contact" component={ContactUs} />
+          <Route path="/flipkart-product" component={FlipkartProduct} />
+          <Route path="/product/:productId">
+            {isAuthenticated ? <ProductPage /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/reviews/:productId">
+            {isAuthenticated ? <ProductReviews /> : <Redirect to="/login" />}
+          </Route>
+          <Route path="/" exact component={Home} />
+        </Switch>
+      </div>
+    </Router>
+  );
+};
 
 export default App;
+
